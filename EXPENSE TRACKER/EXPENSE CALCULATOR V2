@@ -1,0 +1,282 @@
+import json
+import os
+
+expenses = {}
+empty_file = {}
+
+characteristics = ["CATEGORY", "NAME", "AMOUNT"]
+
+
+"""1. Add Expense
+2. View Expenses
+3. Search Expense
+4. Delete Expense
+5. Show Summary
+6. Exit"""
+
+
+def read_file() :
+    verify_existance()
+    with open("history.json", "r") as history_read :
+        expenses = json.load(history_read) 
+        return expenses
+
+
+def save_file(expenses) :
+    with open("history.json", "w") as history_write :
+            json.dump(expenses,history_write,indent=4)
+
+
+def verify_existance() :
+    if os.path.exists("C:\\Users\\barse\\OneDrive\\Desktop\\PYTHON PROJECTS\\history.json") and os.path.getsize("C:\\Users\\barse\\OneDrive\\Desktop\\PYTHON PROJECTS\\history.json") > 2 :
+        return
+        
+    else :
+        with open("history.json", "w") as history_write :
+                json.dump(empty_file, history_write)
+      
+
+def print_details(expenses, key) :
+    print(f"{"-"*140} ")
+    print(f"{key}.")
+    print(f"CATEGORY : {expenses[key]["CATEGORY"]}")
+    print(f"NAME : {expenses[key]["NAME"]}")
+    print(f"AMOUNT : {expenses[key]["AMOUNT"]}")
+    print(f"{"-"*140} ")
+
+       
+def add_expense() :      #1
+    
+    category = input("enter the category :")
+    category = category.lower().strip()
+    if category == "" :
+        print("CATEGORY CAN'T BE EMPTY")
+        return
+    product_name = input("enter the product name :")
+    product_name = product_name.lower().strip()
+    if product_name == "" :
+        print("NAME CAN'T BE EMPTY")
+        return
+    try :
+        amount = input("enter the amount :")
+        if amount.strip() == "" :
+            print("AMOUNT CAN'T BE EMPTY")
+            return
+        else :
+            amount = float(amount)
+
+    except ValueError :
+        print("INVALID INPUT \nENTER A NUMBER")
+        return
+
+    expenses = read_file()
+    id_list = []
+    for key in expenses.keys() :
+        key = int(key)
+        id_list.append(key)
+    if len(id_list) == 0 :
+        highest_id = 1
+    else :
+        length = len(id_list) - 1
+        id_list.sort()
+        highest_id = id_list[length] + 1
+        
+    # print(highest_id)
+    expenses[highest_id] = {}
+    expenses[highest_id]["CATEGORY"] = category
+    expenses[highest_id]["NAME"] = product_name
+    expenses[highest_id]["AMOUNT"] = amount
+    save_file(expenses)
+    print(" ")
+    print(f"expense number : {len(expenses)}")
+    print(" ")
+    print("expense added sucessfully !!")
+
+
+def view_expense() :     #2
+    expenses = read_file()
+    if len(expenses) == 0 :
+        print("no data found")
+
+    else :
+        for key in expenses :
+            print(f"{"-"*140} ")
+            print(f"{key}.")
+            for detail in characteristics :
+                print(f"{detail} : {expenses[key][detail]}        ")
+            print(f"{"-"*140}")
+
+
+def Search_expense() :   #3
+    print("1.BY ID \n2.BY CATEGORY \n3.BY NAME")
+    choice2 = input("enter your choice :")
+    if choice2 == "1" :
+        try :
+            id_search = input("enter your ID to search :")
+            if id_search.strip() == "" :
+                print("search can't be empty")
+            else :
+                expenses = read_file()
+                found_id = False
+                for key in expenses :
+                    if id_search == key :
+                        found_id = True
+                        print_details(expenses, key)
+                if found_id == False :
+                   print(f"the ID({id_search}) DOES NOT EXIST")
+
+        except ValueError :
+            print("INVALID INTEGER")
+        
+
+    elif choice2 == "2" :
+        category_search = input("enter your category to search :")
+        if category_search.strip() == "" :
+            print("search can't be empty")
+            return
+        else :
+            expenses = read_file()
+            found_category = False
+            for key in expenses :
+                if category_search.lower() == expenses[key]["CATEGORY"] :
+                    found_category = True
+                    print_details(expenses, key)
+                
+            if found_category == False :
+                print(f"the CATEGORY({category_search}) DOES NOT EXIST")
+
+    elif choice2 == "3" :
+        name_search = input("enter your product name to search :")
+        if name_search.strip() == "" :
+            print("search can't be empty")
+        else :
+            expenses = read_file()
+            found_name = False
+            for key in expenses :
+                if name_search.lower() == expenses[key]["NAME"] :
+                    found_name = True
+                    print_details(expenses, key)
+            if found_name == False :
+                print(f"the NAME({name_search}) DOES NOT EXIST")
+    else :
+        print("INVALID RESPONSE \nTRY AGAIN !!")
+
+
+def delete_expense() :   #4
+
+    expenses = read_file()
+    if len(expenses) == 0 :
+        print("NO DATA FOUND !!")
+    
+    else :
+        print("DO YOU REALLY WANT TO DELETE [YES(Y)/NO(N)] :")    
+        choice3 = input("enter your choice :")
+        choice3 = choice3.lower()
+
+        if choice3 == "y" :
+            
+            print(f"1. DELETE BY ID \n2.DELETE ALL")
+            choice5 = input("ENTER YOUR CHOICE :")
+            if choice5 == "1" :
+                choice4 = input("enter the expense ID that u want to delete : ")
+                if choice4.strip() == "" :
+                    print("expense ID can't be empty") 
+                    return
+                else :
+                    expenses = read_file()
+                    
+                    if choice4 in expenses :  
+                        del expenses[choice4]
+                        save_file(expenses)
+                        print(f"data has been sucessfully deleted of expense id-{choice4}")
+                    else :
+                        print("key not found")
+                            
+            elif choice5 == "2" :
+                print("all data will delete peramently \nstill want to continue [YES(Y)/NO(N)] :")
+                choice6 = input("enter your choice :")
+                if choice6.lower() == "y" :
+                    expenses = read_file()
+                    expenses.clear()
+                    save_file(expenses)
+
+                elif choice6.lower() == "n" :
+                    print("DELETION CANCELLED !!")
+
+                else :
+                    print(f"INVALID RESPONSE \nTRY AGAIN !!")
+
+
+        elif choice3 == "n" :
+            print("DELETION CANCELLED !!")
+
+        else :
+            print(f"INVALID RESPONSE \nTRY AGAIN !!")
+
+
+def show_summary() :     #5   
+    spending = []
+    total_spending = 0
+    highest_spending = 0
+    lowest_spending = 0
+    categories = set()
+    avalible_keys = []
+
+
+    expenses = read_file()
+    if len(expenses) == 0 :
+        print("no expenses found")
+    else :
+        for keys in expenses.keys() :
+            avalible_keys.append(keys)
+        for key in avalible_keys :
+            amt = int(expenses[key]["AMOUNT"])
+            categories.add(expenses[key]["CATEGORY"])
+            spending.append(amt)
+            total_spending = sum(spending)
+        print(f"{"-"*140} ")
+        print(f"TOTAL SPENDING : RS.{total_spending}")
+        print(" ")
+
+        for category in categories :
+            category_amount = 0
+            category = str(category)
+            for key in avalible_keys :
+                c = str(expenses[key]["CATEGORY"])
+                if c == category :
+                    z = int(expenses[key]["AMOUNT"])
+                    category_amount += z
+            print(f"{category} : RS.{category_amount}")
+        print(" ")
+        print(f"HIGHEST SPENDING : {max(spending)} \nLOWEST SPENDING : {min(spending)}")
+        print(f"NO. OF EXPENSES : {len(expenses)}")
+        print(" ")
+        print(f"AVARAGE SPENDING : RS.{int(total_spending/len(expenses))}")
+
+def expense_tracker() :
+
+    while True :
+        print("="*140)
+        name = "EXPENSE TRACKER"
+        print(name.rjust(78," "))
+        print("="*140)
+        print(f"1. Add Expense \n2. View Expenses \n3. Search Expense  \n4. Delete Expense \n5. Show Summary \n6. Exit")
+        choice = input("enter your choice :")
+
+        if choice == "1" :
+            add_expense()
+        elif choice == "2" :
+            view_expense()
+        elif choice == "3" :
+            Search_expense()
+        elif choice == "4" :
+            delete_expense()
+        elif choice == "5" :
+            show_summary()
+        elif choice == "6" :
+            print("EXPENSE TRACKER CLOSED SUCESSFULLY !!")
+            break
+        else :
+            print(f"INVALID RESPONSE \nTRY AGAIN!!")
+
+expense_tracker()

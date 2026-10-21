@@ -1,0 +1,122 @@
+expenses = {}
+def add_expense() :         #1
+    for value in range(len(expenses) + 1, len(expenses) + 2) :
+        expenses[value] = {}
+    category = input("enter your product category :")
+    expenses[value]["category"] = category
+    with open("tracker.txt","a") as tracker :
+        tracker.write(f"CATEGORY : {category} \n")
+    name = input("enter your product name :")
+    expenses[value]["name"] = name
+    with open("tracker.txt","a") as tracker :
+       tracker.write(f"NAME : {name} \n")
+    while True :
+        try :
+            amount = int(input("enter your product amount :"))
+            break
+        except ValueError :
+            print("invalid input")
+    expenses[value]["amount"] = amount 
+    with open("tracker.txt","a") as tracker :
+        tracker.write(f"AMOUNT : {amount} \n")
+    with open("tracker.txt","a") as tracker :
+        tracker.write("----------------------------------------------------------------------------------------------------------------------- \n")
+
+def print_library() :       #7
+    print(expenses)
+
+def view_expense() :        #2
+    with open("tracker.txt","r") as tracker :
+        data = tracker.read()
+        if data == "" :
+            print("NO EXPENSE FOUND")
+        else :
+            data = tracker.read()
+            print(data, end = "")
+
+def delete_expense() :      #4
+    with open("tracker.txt","r") as tracker :
+        data = tracker.read()
+        if data == "" :
+            print("NO EXPENSE FOUND")
+        else :
+            while True :
+                choice2 = input("are you sure you want to delete your history (yes[y]/no[n]) : ")
+                if choice2.lower() == "y" :
+                    print("DATA DELETED SUCESSFULLY !!")
+                    expenses.clear()
+                    with open("tracker.txt","w") as tracker :
+                        pass
+                    break
+                elif choice2.lower() == "n" :
+                    print("HISTORY IS NOT DELETED !!")
+                    break
+                else :
+                    print("invalid value \ntry again !!")
+
+def serach_expense() :      #3
+    while True :
+        print("1.BY NAME \n2.BY CATEGORY")
+        choice3 = str(input("select your method to search :"))
+        found = False
+        if choice3 == "1" :
+            word_search = str(input("enter product to search :"))
+            for val in expenses :
+                if word_search in expenses[val]["name"] :
+                    found = True
+                else :
+                    found = False
+                if found :
+                    print(expenses[val])
+            if found == False :
+                print("NOT FOUND")
+            break
+        elif choice3 == "2" :
+            word_search = str(input("enter product to search :"))
+            for val in expenses :
+                if word_search in expenses[val]["category"] :
+                    found = True
+                else :
+                    found = False
+                if found :
+                    print(expenses[val])
+                break
+            if found == False :
+                print("NOT FOUND")
+                break
+        else :
+            print("invalid integer")
+        
+def show_spending() :       #5
+    addition = 0
+    for val in expenses :
+        expenses[val]["amount"] = int(expenses[val]["amount"])
+        addition += expenses[val]["amount"]
+    print(f"your total spending is Rs.{addition}")
+
+def expense_tracker() :
+    while True :
+        try :
+            print("============================================================= EXPENSE TRACKER ==============================================================")
+            print("1.ADD EXPENSE \n2.VIEW ALL EXPENSE \n3.SEARCH EXPENSE \n4.DELETE EXPENSE \n5.SHOW TOTAL SPENDING \n6.EXIT")
+            choice = int(input("enter your choice :"))
+            if choice == 1 :
+                add_expense()
+            elif choice == 2 :
+                view_expense()
+            elif choice == 3 :
+                serach_expense()
+            elif choice == 4 :
+                delete_expense()
+            elif choice == 5 :
+                show_spending()
+            elif choice == 7 :
+                print_library()
+            elif choice == 6 :
+                print("PROGRAM ENDED SUCESSFULLY !!")
+                break
+
+        except ValueError:
+            print("invalid integer")
+
+expense_tracker()

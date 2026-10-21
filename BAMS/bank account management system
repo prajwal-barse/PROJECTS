@@ -1,0 +1,468 @@
+from random import randint
+import os
+import json
+from datetime import datetime 
+
+empty_file = {}
+
+
+def transcation_details() :
+    result = datetime.now()
+    return f"DATE :- {result.date()} , TIME :- {result.strftime("%H:%M:%S")}"
+
+def verify_existance() :
+    if os.path.exists(f"transaction_history.json") and os.path.getsize(f"transaction_history.json") >= 2 :
+        return
+    else :
+        # folder()
+        with open("transaction_history.json", "w") as write_history :
+            json.dump(empty_file, write_history)
+    
+def read_file() :
+    verify_existance()
+    with open("transaction_history.json", "r") as read_history :
+        history = json.load(read_history)
+        return history
+
+def write_file(history) :
+    with open("transaction_history.json", "w") as write_history :
+        json.dump(history, write_history, indent=4)
+
+def find_account() :
+    history = read_file()
+
+    find_id = input("ENTER ACCOUNT NO. TO FIND :")
+
+    if find_id in history :
+        print("ACCOUNT FOUND SUCESSFULLY")
+        print(" ")
+        print(f"1. ACCOUNT NUMBER : {find_id} \n2. ACCOUNT USER NAME : {history[find_id]["NAME"]}")
+
+    else :
+        print("")
+        print("ACCOUNT NOT FOUND")
+
+def account_id_generator() :
+
+    account_id = randint(10000000, 99999999)
+    history = read_file()
+
+    if str(account_id) in history : 
+        print("detected")
+        return account_id_generator()
+
+    else :
+        return account_id
+
+
+class bank_account() :
+    def __init__(self, name, pin, account_type, account_id, balance=0):
+        self.name = name
+        self.__pin = pin
+        self.account_type = account_type
+        self.account_id = str(account_id)
+        self.__balance = balance
+        self.transaction_history = {}
+
+    def add_account(self) :
+        history = read_file()
+
+        history[self.account_id] = {}
+        history[self.account_id]["NAME"] = self.name
+        history[self.account_id]["ACCOUNT TYPE"] = self.account_type
+        history[self.account_id]["PIN"] = self.__pin
+        history[self.account_id]["BALANCE"] = self.__balance
+        history[self.account_id]["TRANSACTION HISTORY"] = {}
+
+        write_file(history)
+
+        print("account added sucessfully !!")
+
+    def check_account(self, given_account) :
+        history = read_file()
+        if given_account in history.keys() :
+            return
+
+        else :
+            print("ACCOUNT DOESN'T EXSIT")
+
+    def deposit(self ,amount) :
+        deposit_history ={}
+        self.__balance += amount
+
+        history = read_file()
+        history[self.account_id]["BALANCE"] = self.__balance
+
+        highest_id = len( history[self.account_id]["TRANSACTION HISTORY"]) + 1
+        highest_id = str(highest_id)
+        deposit_history["STATUS"] = "DEPOSITED"
+        deposit_history["AMOUNT"] = f"credited ₹{amount}"
+        deposit_history["DETAILS"] = transcation_details()
+        history[self.account_id]["TRANSACTION HISTORY"][highest_id] = deposit_history
+
+        print("")
+        print(f"₹{amount} ADDED SUCESSFULLY")
+        print("")
+        print(f"YOUR CURRENT BALANCE IS ₹{self.__balance}")
+
+        write_file(history)
+
+    def withdraw(self, amount) :
+        withdraw_history = {}
+        self.__balance -= amount
+
+        history = read_file()
+        history[self.account_id]["BALANCE"] = self.__balance
+
+        highest_id = len( history[self.account_id]["TRANSACTION HISTORY"]) + 1
+        highest_id = str(highest_id)
+        withdraw_history["STATUS"] = "WITHDRAWN"
+        withdraw_history["AMOUNT"] = f"debited ₹{amount}"
+        withdraw_history["DETAILS"] = transcation_details()
+        history[self.account_id]["TRANSACTION HISTORY"][highest_id] = withdraw_history
+
+        print("")
+        print(f"₹{amount} WITHDRAWN SUCESSFULLY")
+        print("")
+        print(f"YOUR CURRENT BALANCE IS ₹{self.__balance}")
+
+        write_file(history)
+        
+    def view_balance(self) :
+        print("")
+        print("-"*162)
+        print(f"YOUR CURRENT BALANCE IS ₹{self.__balance}")
+        print("-"*162)
+
+    def TransactionHistory(self, account_id) :
+        history = read_file()
+        if len(history[account_id]["TRANSACTION HISTORY"]) <= 0 :
+            print("NO TRANSACTION FOUND")
+        else :
+            for key in history[account_id]["TRANSACTION HISTORY"].keys() :
+                print("-"*162)
+                print(f"TRANSACTION ID : {key}\nAMOUNT : {history[account_id]["TRANSACTION HISTORY"][key]["AMOUNT"]}\nSTATUS : {history[account_id]["TRANSACTION HISTORY"][key]["STATUS"]}\nDETAILS : {history[account_id]["TRANSACTION HISTORY"][key]["DETAILS"]}")
+                print("-"*162)
+
+    def change_name(self) :
+        history = read_file()
+        print(f"YOUR CURRENT NAME IS {self.name}")
+        new_name = input("ENTER YOUR NEW USER NAME :")
+        if new_name.replace(" ", "").isalpha() :
+
+            try :
+                verify_pin = int(input("ENTER YOUR PIN TO CONFIRM CHANGE :"))
+
+            except ValueError :
+                print("INVALID INTEGER")
+            if verify_pin == history[self.account_id]["PIN"] :
+                self.name = new_name
+                history[self.account_id]["NAME"] = new_name
+                write_file(history)
+                print(f"{new_name} IS SET AS YOUR USER NAME")
+
+            else :
+                print("PIN DOESN'T MATCH")
+
+        else :
+            print("ONLY ALPHABETS ARE ALLOWED")
+
+    def change_pin(self) :
+        history = read_file()
+        print("")
+        try :
+            new_pin = int(input("ENTER YOUR NEW PIN :"))
+            if new_pin == 0 :
+                print("YOU CAN'T SET THIS AS ZERO")
+
+            else :
+                print(" ")
+                if len(str(new_pin)) == 4 :
+                    try :
+                        verify_pin = int(input("ENTER YOUR CURRENT PIN TO CONFIRM CHANGE :"))
+
+                    except ValueError :
+                        print("INVALID INTEGER")
+
+                    
+                    if verify_pin == history[self.account_id]["PIN"] :
+                        self.__pin = new_pin
+                        history[self.account_id]["PIN"] = new_pin
+                        write_file(history)
+                        print(" ")
+                        print(f"{new_pin} IS SET AS YOUR PIN")
+
+                    else :
+                        print("PIN DOESN'T MATCH")
+
+                else :
+                    print("PIN IS EITHER TOO LONG OR TOO SHORT\nTRY FOUR DIGIT PIN")
+
+        except ValueError :
+            print("INVALID INTEGER")
+
+    def delete_account(self) :
+        print(f"ARE YOU SURE U WANT TO DELETE YOUR ACCOUNT -->\n>YES[Y]\n>NO[N]")
+        print("")
+        choice = input("ENTER YOUR CHOICE :")
+        if choice.lower() == "y" :
+            history = read_file()
+            del history[self.account_id]
+            print(f"{self.account_id} IS DELETED SUCESSFULLY")
+            write_file(history)
+            return "DONE"
+
+        elif choice.lower() == "n" :
+            print("GETTING BACK TO LOGIN PAGE")
+
+        else :
+            print("INVALID CHOICE \nTRY AGAIN")
+
+    def transfer(self ,reciver_id , amount) :
+        history = read_file()
+
+        if self.account_id == reciver_id :
+            print("CAN NOT TRANSFER MONEY TO SAME ACCOUNT NUMBER")
+
+        else :
+            if self.__balance < amount :
+                print("INSUFFICIENT BALANCE")
+                        
+            else :
+                sender_end = {}
+                receiver_end = {}
+                sender_balance = history[self.account_id]["BALANCE"]
+                sender_balance -= amount
+                self.__balance = sender_balance
+                history[self.account_id]["BALANCE"] = sender_balance
+                sender_id = len( history[self.account_id]["TRANSACTION HISTORY"]) + 1
+                sender_id = str(sender_id)
+                sender_end["STATUS"] = f"TRANSFERED TO {history[reciver_id]["NAME"]}"
+                sender_end["AMOUNT"] = amount
+                sender_end["DETAILS"] = transcation_details()
+                history[self.account_id]["TRANSACTION HISTORY"][sender_id] = sender_end
+
+
+                receiver_balance = history[reciver_id]["BALANCE"]
+                receiver_balance += amount
+                history[reciver_id]["BALANCE"] = receiver_balance
+                receivers_id = len( history[reciver_id]["TRANSACTION HISTORY"]) + 1
+                receivers_id = str(receivers_id)
+                receiver_end["STATUS"] = f"RECEIVED FROM {history[self.account_id]["NAME"]}"
+                receiver_end["AMOUNT"] = amount
+                receiver_end["TIME"] = transcation_details()
+                history[reciver_id]["TRANSACTION HISTORY"][receivers_id] = receiver_end
+                print("")
+                print(f"{history[self.account_id]["NAME"]} TRANSFERED ₹{amount} TO {history[reciver_id]["NAME"]} SUCESSFULLY !!")
+                write_file(history)
+
+
+class bank() :
+    def __init__(self, account_id, pin) :
+        self.account_id = account_id
+        self.__pin = pin
+
+    def verify_pin(self) :
+        history = read_file()
+
+        try :
+            if self.account_id in history.keys() :
+                if history[self.account_id]["PIN"] == int(self.__pin) :
+                    print(f"ACCOUNT HOLDER : {history[self.account_id]["NAME"]}\naccount type : {history[self.account_id]["ACCOUNT TYPE"]}\nBALANCE : {history[self.account_id]["BALANCE"]}")
+                    login_menu(self.account_id)
+                else :
+                    print("PIN DOESN'T MATCH")
+            else :
+                print("ACCOUNT NOT FOUND")
+
+        except KeyError :
+            print("INVALID ACCOUNT NUMBER")
+
+        except ValueError :
+            print("INVALID INTEGER")
+
+
+def welcome_menu() :
+    while True :
+        wlc_msg = "WELCOME TO B.A.M.S."
+        print("="*162)
+        print(wlc_msg.center(160))
+        print("="*162)
+        print(f"1.CREATE ACCOUNT\n2.LOGIN ACCOUNT\n3.FIND ACCOUNT\n4.EXIT")
+
+        choice = input("enter your choice :")
+
+        if choice == "1" :
+            create_account()
+
+        elif choice == "2" :
+            login_account() 
+
+        elif choice == "3" :
+            find_account()  
+
+        elif choice == "4" :
+            print("B.A.M.S. CLOSED SUCESSFULLY !!")
+            break
+
+        else :
+            print(f"invalid choice \ntry again")
+        
+def login_account() :
+    wlc_msg = "LOGIN TO YOUR ACCOUNT"
+    print("="*162)
+    print(wlc_msg.center(160))
+    print("="*162)
+    print("")
+    account_id = input("enter a valid account number :")
+    try :
+        pin = int(input("enter your pin :"))
+
+    except ValueError :
+        print("INVALID INTEGER")
+    user_login = bank(account_id, pin)
+    user_login.verify_pin()
+
+def create_account() :
+    account_id = account_id_generator()
+    wlc_msg = "CREATE A NEW ACCOUNT"
+    print("="*162)
+    print(wlc_msg.center(160))
+    print("="*162)
+
+
+    print(f"YOUR ACCOUNT NUMBER IS {account_id}")
+    print("")
+    print(f"choose your account type :\n1.SAVING ACCOUNT\n2.CURRENT ACCOUNT")
+
+    account_type = input("enter your account type :")
+
+    if account_type == "1" :
+        account_type = "saving account"
+
+    elif account_type == "2" :
+        account_type = "current account"
+
+    else :
+        print("invalid choice")
+        return
+
+    user_name = input("enter your name :")
+    if user_name.replace(" ", "").isalpha() :
+        pass
+
+    else :
+        print("name can not contain any special characters")
+        return
+    try :
+        pin = int(input("CREATE A FOUR DIGIT PIN :"))
+        if  pin == 0 :
+            print("U CAN'T SET THIS AS PASSWORD")
+        
+        elif 1000 > pin or pin > 9999  :
+            print("your pin is either too short or too long \ntry four digit pin")
+            return
+        
+        pin_confirm = int(input("TYPE AGAIN TO CONFIRM YOUR PIN :"))
+    
+        if pin == pin_confirm :
+            pass
+
+        else :
+            print("pin doesn't match \ntry again !!")
+
+        new_account = bank_account(user_name, pin, account_type,account_id)
+        new_account.add_account()
+
+
+    except ValueError :
+        print("invalid integer \ntry again")
+
+def login_menu(account_id) :
+    while True :
+        history = read_file()
+        wlc_msg = f"WELCOME, {history[account_id]["NAME"]}"
+        print("="*162)
+        print(wlc_msg.center(160))
+        print("="*162)
+
+        print(f"1.DEPOSIT\n2.WITHDRAW\n3.VIEW BALANCE\n4.VIEW TRANSACTION HISTORY\n5.CHANGE ACCOUNT NAME\n6.CHANGE PIN\n7.DELETE ACCOUNT\n8.TRANSFER\n9.LOGOUT")
+
+        choice = input("ENTER YOUR CHOICE :")
+
+        working_account = bank_account(history[account_id]["NAME"], history[account_id]["PIN"], history[account_id]["ACCOUNT TYPE"], account_id, balance=history[account_id]["BALANCE"])
+
+        if choice == "1" :
+            try :
+                deposit = int(input("CHOOSE AMOUNT TO DEPOSIT :"))
+                if deposit <= 0 :
+                    print("AMOUNT CAN'T BE LESS THAN ₹1")
+
+                else :
+                    working_account.deposit(deposit)
+
+            except ValueError :
+                print("INVALID INTEGER")
+
+        elif choice == "2" :
+            try :
+                withdraw = int(input("CHOOSE AMOUNT TO WITHDRAW :"))
+                if withdraw <= 0 :
+                    print("AMOUNT CAN'T BE LESS THAN ₹1")
+
+                else :
+                    if withdraw > history[account_id]["BALANCE"] :
+                        print("YOU CAN'T WITHDRAW MORE THAN YOUR BALANCE")
+
+                    else :
+                        working_account.withdraw(withdraw)
+
+                
+
+            except ValueError :
+                print("INVALID INTEGER")
+
+        elif choice == "3" :
+            working_account.view_balance()
+
+        elif choice == "4" :
+            working_account.TransactionHistory(account_id)
+
+        elif choice == "5" :
+            working_account.change_name()
+
+        elif choice == "6" :
+            working_account.change_pin()    
+
+        elif choice == "7" :
+            result = working_account.delete_account()
+
+            if result == "DONE" :
+                break
+
+        elif choice == "8" :
+            history = read_file()
+            receiver_id = input("ENTER RECEIVER'S ACCOUNT NUMBER :")
+            if receiver_id in history :
+                try :
+                    amount = int(input(f"ENTER AMOUNT TO TRANSFER TO {history[receiver_id]["NAME"]} :"))
+                    if amount <= 0 :
+                        print("AMOUNT CAN'T BE LESS THAN ₹1")
+    
+                    else :
+                        working_account.transfer(receiver_id, amount)
+    
+                except ValueError :
+                    print("INVALID INTEGER")
+    
+            else :
+                print("RECIVER ACCOUNT NOT FOUND")
+            
+        elif choice == "9" :
+            print("ACCOUNT CLOSED SUCESSFULLY")
+            break
+
+
+welcome_menu()
+
+# folder()
