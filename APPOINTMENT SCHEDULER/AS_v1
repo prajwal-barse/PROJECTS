@@ -1,1 +1,132 @@
-print("hello world")
+import os
+import json
+import datetime as dt
+import random
+
+# file_loc = ""
+loc = {}
+empty_file = {}
+loc_name = "file location.json"
+
+
+class scheduler() :
+    pass
+
+
+class appointment() :
+    pass
+
+
+
+
+
+def admin_login() :
+    pass
+
+
+def patient_login() :
+    pass
+
+def load_locHist(loc, write_hist) :
+    verify_existance(loc)
+    with open(loc, "w") as load_locHist :
+        json.dump(write_hist, load_locHist) 
+
+
+def read_current() :
+    with open("current.txt", "r") as read_cur :
+        loc = read_cur.read()
+        file_name = os.path.basename(loc)
+    return loc, file_name
+
+
+def verify_existance(loc) :
+    print("1")
+    if os.path.exists(loc) and os.path.getsize(loc) >= 2 :
+        print("2")
+        return
+
+    else :
+        print("3")
+        with open(loc, "w") as initiate :
+            json.dump(empty_file, initiate)
+
+
+
+def read_locHist() :
+    file_loc, file_name = read_current()
+    verify_existance(file_loc)
+    print(file_loc, file_name)
+    with open(file_loc, "r") as read_loc :
+        r = json.load(read_loc)
+    return r
+
+def location() :
+    location = input("ENTER THE ABSOULUTE FILE PATH :")
+    clean_location = os.path.normpath(location)
+    verify_existance(clean_location)
+    if os.path.exists(clean_location) :
+        with open("current.txt", "w") as locations :
+            locations.write(clean_location)
+        loc = read_locHist()
+        id = len(loc) + 1
+        loc[id] = location
+        load_locHist(clean_location, loc)
+
+    else :
+        print(f"FILE DOES NOT EXIST \nTRYAGAIN!!")
+
+
+
+def welcome_menu() :
+    while True :
+        msg = "Dr.Patil's APPOINTMENT SCHEDULER"
+        print(f"{"="*162}")
+        print(msg.center(162))
+        print(f"{"="*162}")
+        print(f"1.ADMIN LOGIN \n2.PATIENT LOGIN \n3.CREATE ACCOUNT \n4.FILES LOCATION \n5.EXIT")
+        choice = input("ENTER YOUR CHOICE :")
+    
+        if choice == "1" :
+            pass
+
+        elif choice == "2" :
+            pass
+
+        elif choice == "3" :
+            pass
+
+        elif choice == "4" :
+            print("1.SELECT AUTOMATICALLY \n2.BROWSE...")
+            choice2 = input("ENTER YOUR CHOICE :")
+            if choice2 == "1" :
+                pass
+
+            elif choice2 == "2" :
+                file_loc = read_current()
+                if file_loc == "" :
+                    print("NO LOCATION IS SET !!")
+                    location()
+                
+                else :
+                    print("WANT TO CHANGE FILE LOCATION? (yes[Y]/no[N])")
+                    choice1 = input("ENTER YOUR CHOICE :")
+                    if choice1.lower() == "y" :
+                        location()
+                        print("LOCATION CHANGED SUCESSFULLY !!")
+
+                    else :
+                        print("CLOSED")
+                        break
+
+        elif choice == "5" :
+            print("PROGRAM CLOSED SUCESSFULLY !!")
+            break
+        else :
+            print(f"INVALID CHOICE \nTRY AGAIN!!")
+
+
+# read_current()
+welcome_menu()
+# verify_existance(r"C:\Users\barse\OneDrive\Desktop\PYTHON PROJECTS\PROJECTS\APPOINTMENT SCHEDULER\file location.json")
+# admin_login()
